@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import logo from "@/assets/images/logo.svg";
 
 const NavLinks = [
   {
@@ -25,7 +26,6 @@ const NavLinks = [
   { href: "/posts", label: "Posts" },
   { href: "/use-cases", label: "Use Cases" }
 ];
-import logo from "@/assets/images/logo.svg";
 
 export default function NavBar() {
   const [open, setOpen] = useState(false);
