@@ -20,6 +20,30 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Environment Variables
+
+The project uses environment variables for configuration. Create a `.env.local` file in the root directory of the project with the following variables:
+
+```
+# API 기본 URL
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+
+# 애플리케이션 환경
+NEXT_PUBLIC_APP_ENV=development
+
+# 이미지 베이스 URL (선택사항)
+NEXT_PUBLIC_IMAGE_BASE_URL=/assets/images
+```
+
+For production deployment, set these environment variables in your hosting platform (e.g., Vercel).
+
+### Environment Files
+
+- `.env.local`: Local development overrides (not committed to git)
+- `.env.development`: Development environment defaults
+- `.env.production`: Production environment defaults
+- `.env.test`: Testing environment defaults
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
@@ -29,28 +53,28 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deployment
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-## 배포
+## Deployment
 
-이 프로젝트는 GitHub Actions와 Vercel을 사용하여 배포됩니다.
+This project is deployed using GitHub Actions and Vercel.
 
-### 설정 방법
+### Setup Instructions
 
-1. GitHub 저장소에 다음 시크릿을 추가해야 합니다:
+1. Add the following secrets to your GitHub repository:
 
-   - `VERCEL_TOKEN`: Vercel API 토큰
-   - `VERCEL_ORG_ID`: Vercel 조직 ID
-   - `VERCEL_PROJECT_ID`: Vercel 프로젝트 ID
+- `VERCEL_TOKEN`: Vercel API token
+- `VERCEL_ORG_ID`: Vercel organization ID
+- `VERCEL_PROJECT_ID`: Vercel project ID
 
-2. 메인 브랜치에 푸시하면 GitHub Actions에 의해 자동으로 Vercel 프로덕션 환경에 배포됩니다.
-3. Pull Request를 생성하면 프리뷰 배포가 자동으로 생성됩니다.
+2. Pushing to the main branch will automatically deploy to the Vercel production environment via GitHub Actions.
+3. Creating a Pull Request will automatically generate a preview deployment.
 
-### 로컬 개발
+### Local Development
 
 ```bash
 # 개발 서버 실행
