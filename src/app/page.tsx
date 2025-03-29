@@ -1,3 +1,8 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
 import { HeroSection } from "@/components/HeroSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
 import { AIToolsSection } from "@/components/AIToolsSection";
@@ -34,9 +39,8 @@ const serverCards = [
   }
 ];
 
-
-
 export default function Home() {
+
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-950 to-zinc-900">
       <main>

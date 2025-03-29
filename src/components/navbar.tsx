@@ -1,18 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { MenuIcon, ChevronDown } from "lucide-react";
+import { MenuIcon, ChevronDown, User, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/auth-context";
+import { getUserInfo, removeToken } from "@/lib/auth";
 import logo from "@/assets/images/logo.svg";
+import LoginModal from "@/components/auth/login-modal";
+import { useRouter } from "next/navigation";
 
 const NavLinks = [
   {
@@ -29,6 +34,68 @@ const NavLinks = [
 
 export default function NavBar() {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const { isAuthenticated, userInfo, logout, isLoading } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    router.refresh();
+  };
+
+  const UserProfileButton = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-zinc-800 animate-pulse" />
+        </div>
+      );
+    }
+
+    if (!isAuthenticated || !userInfo) {
+      return <LoginModal />;
+    }
+
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger className="focus:outline-none">
+          <div className="relative w-8 h-8 rounded-full overflow-hidden ring-2 ring-violet-600 transition-all hover:ring-violet-500">
+            <Image
+              src={userInfo.imageUrl || ""}
+              alt={`${userInfo.name}'s profile`}
+              fill
+              className="object-cover"
+            />
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className="w-56 bg-zinc-900 border-zinc-800"
+        >
+          <div className="px-2 py-1.5">
+            <p className="text-sm font-medium text-white">{userInfo.name}</p>
+            <p className="text-xs text-zinc-400">{userInfo.email}</p>
+          </div>
+          <DropdownMenuSeparator className="bg-zinc-800" />
+          <DropdownMenuItem
+            asChild
+            className="focus:bg-zinc-800 cursor-pointer"
+          >
+            <Link href="/my-page" className="flex items-center">
+              <User className="w-4 h-4 mr-2" />
+              <span>My Page</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={handleLogout}
+            className="focus:bg-zinc-800 cursor-pointer text-red-400 focus:text-red-400"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            <span>Logout</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-sm">
@@ -89,10 +156,11 @@ export default function NavBar() {
             )
           )}
         </nav>
-        <div className="hidden md:block">
+        <div className="hidden md:flex md:items-center md:gap-4">
           <Button variant="purple">
             <Link href="/use-cases">Use Cases</Link>
           </Button>
+          <UserProfileButton />
         </div>
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild className="md:hidden">
@@ -136,6 +204,9 @@ export default function NavBar() {
               <Button variant="purple" className="mt-4 w-full">
                 <Link href="/use-cases">Use Cases</Link>
               </Button>
+              <div className="mt-4">
+                <UserProfileButton />
+              </div>
             </nav>
           </SheetContent>
         </Sheet>

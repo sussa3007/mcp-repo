@@ -136,6 +136,30 @@ const CustomMarkdown: React.FC<CustomMarkdownProps> = ({
             );
           },
           a({ node, ...props }: CodeComponentProps) {
+            // 이미지를 포함하는 링크인 경우 span으로 감싸서 반환
+            const hasImageChild =
+              Array.isArray(props.children) &&
+              props.children.length > 0 &&
+              React.isValidElement(props.children[0]) &&
+              props.children[0].type === "img";
+
+            if (hasImageChild) {
+              return (
+                <span className="inline-block">
+                  <a
+                    className="text-purple hover:text-purple-light transition-colors no-underline"
+                    target={linkTarget}
+                    rel={
+                      linkTarget === "_blank"
+                        ? "noopener noreferrer"
+                        : undefined
+                    }
+                    {...props}
+                  />
+                </span>
+              );
+            }
+            // 일반 링크의 경우 기존 스타일 유지
             return (
               <a
                 className="text-purple hover:text-purple-light underline transition-colors"
@@ -184,17 +208,47 @@ const CustomMarkdown: React.FC<CustomMarkdownProps> = ({
             );
           },
           img({ node, ...props }: CodeComponentProps) {
-            return (
-              <div className="my-6">
-                <Image 
-                  className="rounded-md w-full" 
-                  width={1000}
-                  height={600}
-                  style={{ width: '100%', height: 'auto' }}
-                  alt={props.alt || "Markdown content image"}
-                  src={props.src || ""}
+            // favicon 또는 작은 아이콘 이미지인 경우
+            if (
+              props.src?.includes("favicon") ||
+              (props.width &&
+                props.height &&
+                props.width === props.height &&
+                props.width <= 16)
+            ) {
+              return (
+                <img
+                  className="inline-block align-middle"
+                  width={12}
+                  height={12}
+                  style={{ margin: "0 4px" }}
+                  alt={props.alt || "Icon"}
+                  {...props}
                 />
-              </div>
+              );
+            }
+
+            // 배지 이미지인 경우
+            if (props.src?.includes("badge")) {
+              return (
+                <img
+                  className="inline-block"
+                  alt={props.alt || "Badge"}
+                  {...props}
+                />
+              );
+            }
+
+            // 일반 이미지의 경우 Next.js Image 컴포넌트 사용
+            return (
+              <Image
+                className="rounded-md w-full my-6"
+                width={1000}
+                height={600}
+                style={{ width: "100%", height: "auto" }}
+                alt={props.alt || "Markdown content image"}
+                src={props.src || ""}
+              />
             );
           }
         }}

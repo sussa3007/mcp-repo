@@ -9,11 +9,9 @@ export const config = {
   // 실행 환경 (개발/테스트/프로덕션)
   env: process.env.NEXT_PUBLIC_APP_ENV || "development",
 
-  // GitHub API 관련 설정 (향후 필요시 사용)
   github: {
-    apiUrl: "https://api.github.com"
-    // 토큰이 필요한 경우 환경변수에서 가져올 수 있음
-    // token: process.env.GITHUB_TOKEN
+    apiUrl: "https://api.github.com",
+    token: process.env.GITHUB_TOKEN
   },
 
   // 이미지 서비스 관련 설정

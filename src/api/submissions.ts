@@ -1,89 +1,156 @@
 // submissions.ts - API client for handling project submissions
 import { ApiService } from "./api-service";
-import config from "@/lib/config";
+import { ApiResponse } from "@/types/api";
 
-export interface SubmissionData {
+export interface SubmissionRequest {
   name: string;
   author: string;
   type: "server" | "client";
   description: string;
   repoUrl: string;
-  websiteUrl?: string;
+  websiteUrl?: string | null;
   tags: string[];
-  email: string;
+  email?: string | null;
 }
 
-export interface SubmissionResponse {
-  id: string;
-  status: "pending" | "approved" | "rejected";
+export interface SubmissionStatus {
+  id: number;
+  status: "PENDING" | "APPROVED" | "REJECTED";
   message?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
-class SubmissionService extends ApiService {
+export interface Submission {
+  submissionId: number;
+  name: string;
+  author: string;
+  repositoryId?: number;
+  type: string;
+  description: string;
+  repoUrl: string;
+  websiteUrl?: string | null;
+  email?: string | null;
+  status: string;
+  message?: string;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * API service for project submissions
+ */
+export class SubmissionService extends ApiService {
   constructor() {
     super("submissions");
   }
 
   /**
-   * Submit a new MCP server or client project
-   *
-   * @param data The submission data
-   * @returns Submission response with ID and status
+   * Submit a project
    */
-  async submitProject(data: SubmissionData): Promise<SubmissionResponse> {
-    try {
-      // 실제 API 연동 시 아래 주석 해제
-      // return await this.post<SubmissionResponse, SubmissionData>("", data);
-
-      // 목업 응답 (실제 API 구현 시 제거)
-      console.log(`[POST] ${this.getUrl()} - 프로젝트 제출 요청`, data);
-      return {
-        id: `submission-${Date.now()}`,
-        status: "pending",
-        message: "Your submission is being reviewed by our team.",
-        createdAt: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error("Error submitting project:", error);
-      throw error;
-    }
+  async submitProject(
+    request: SubmissionRequest
+  ): Promise<ApiResponse<SubmissionStatus>> {
+    return this.post<SubmissionStatus, SubmissionRequest>("", request);
   }
 
   /**
-   * Check the status of a project submission
-   *
-   * @param submissionId The ID of the submission to check
-   * @returns Current status of the submission
+   * Check submission status
    */
   async checkSubmissionStatus(
-    submissionId: string
-  ): Promise<SubmissionResponse> {
-    try {
-      // 실제 API 연동 시 아래 주석 해제
-      // return await this.get<SubmissionResponse>(submissionId);
+    submissionId: number
+  ): Promise<ApiResponse<SubmissionStatus>> {
+    return this.get<SubmissionStatus>(`/${submissionId}/status`);
+  }
 
-      // 목업 응답 (실제 API 구현 시 제거)
-      console.log(`[GET] ${this.getUrl(submissionId)} - 제출 상태 확인`);
-      return {
-        id: submissionId,
-        status: "pending",
-        message: "Your submission is still being reviewed.",
-        createdAt: new Date(Date.now() - 86400000).toISOString() // 1 day ago
+  /**
+   * Get user's submissions list
+   * @param page Page number (starts from 0)
+   * @param size Page size
+   * @param sort Sorting option (default: createdAt,desc)
+   */
+  async getUserSubmissions(
+    page: number = 0,
+    size: number = 10,
+    sort: string = "createdAt,desc"
+  ): Promise<ApiResponse<Submission[]>> {
+    // Configure query parameters to match Java's Pageable format
+    const response = await this.get<any>(
+      `?page=${page}&size=${size}&sort=${sort}`
+    );
+
+    // Spring Boot's Page object includes actual data list in the content field
+    // Check and transform response structure
+    if (
+      response &&
+      response.data &&
+      response.data.content &&
+      Array.isArray(response.data.content)
+    ) {
+      // If it's a Page object (with content field containing data array)
+      const pageData = response.data as {
+        content: Submission[];
+        totalElements: number;
+        totalPages: number;
+        number: number; // Current page number
+        size: number; // Page size
+        numberOfElements: number; // Number of elements in current page
+        first: boolean; // Whether it's first page
+        last: boolean; // Whether it's last page
+        empty: boolean; // Whether data is empty
       };
-    } catch (error) {
-      console.error("Error checking submission status:", error);
-      throw error;
+
+      // Create pageInfo
+      const pageInfo = {
+        totalElements: pageData.totalElements,
+        totalPages: pageData.totalPages,
+        pageNumber: pageData.number,
+        pageSize: pageData.size,
+        numberOfElements: pageData.numberOfElements,
+        first: pageData.first,
+        last: pageData.last,
+        empty: pageData.empty
+      };
+
+      // Reconstruct response
+      return {
+        ...response,
+        data: pageData.content,
+        pageInfo: pageInfo
+      } as ApiResponse<Submission[]>;
     }
+
+    // Return as is if already in correct structure
+    return response as ApiResponse<Submission[]>;
+  }
+
+  /**
+   * Request reanalysis of a submission
+   */
+  async reanalyzeSubmission(submissionId: number): Promise<ApiResponse<void>> {
+    return this.post<void, Record<string, never>>(
+      `/reanalyze/${submissionId}`,
+      {}
+    );
   }
 }
 
-// 서비스 인스턴스 생성
+// Create service instance
 const submissionService = new SubmissionService();
 
-// 기존 함수명을 유지하면서 서비스 메서드 export
-export const submitProject = (data: SubmissionData) =>
+// Export service methods while maintaining original function names
+export const submitProject = (data: SubmissionRequest) =>
   submissionService.submitProject(data);
 
-export const checkSubmissionStatus = (submissionId: string) =>
+export const checkSubmissionStatus = (submissionId: number) =>
   submissionService.checkSubmissionStatus(submissionId);
+
+export const getUserSubmissions = (
+  page: number = 0,
+  size: number = 10,
+  sort: string = "createdAt,desc"
+) => submissionService.getUserSubmissions(page, size, sort);
+
+export const reanalyzeSubmission = (submissionId: number) =>
+  submissionService.reanalyzeSubmission(submissionId);

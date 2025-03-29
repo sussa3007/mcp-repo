@@ -6,17 +6,48 @@ export interface GithubReadmeResponse {
   name: string;
   path: string;
   content: string;
+  encoding?: string;
+  size?: number;
+  url?: string;
+  html_url?: string;
+  download_url?: string;
 }
 
 export interface GithubContentItem {
   name: string;
   path: string;
   type: string;
+  size?: number;
+  url?: string;
+  html_url?: string;
+  download_url?: string | null;
 }
 
-class GithubService extends ApiService {
+export interface GithubFileContent {
+  type: string;
+  encoding?: string;
+  size?: number;
+  name: string;
+  path: string;
+  content?: string;
+  sha: string;
+  url: string;
+  git_url?: string;
+  html_url?: string;
+  download_url?: string;
+}
+
+export class GithubService extends ApiService {
+  private headers: Record<string, string>;
+
   constructor() {
-    super("github");
+    super();
+    this.headers = {
+      Accept: "application/vnd.github.v3+json",
+      ...(config.github.token
+        ? { Authorization: `token ${config.github.token}` }
+        : {})
+    };
   }
 
   /**
@@ -26,66 +57,24 @@ class GithubService extends ApiService {
     owner: string,
     repo: string
   ): Promise<GithubReadmeResponse> {
-    // 실제 API 연동 시 아래 주석 해제
-    // const url = `${config.github.apiUrl}/repos/${owner}/${repo}/readme`;
-    // const options = config.github.token
-    //   ? { headers: { 'Authorization': `token ${config.github.token}` } }
-    //   : {};
-    // return await this.get<GithubReadmeResponse>(`${owner}/${repo}/readme`, options);
+    try {
+      const response = await fetch(
+        `${config.github.apiUrl}/repos/${owner}/${repo}/readme`,
+        { headers: this.headers }
+      );
 
-    // 현재는 목업 데이터 반환
-    return {
-      name: "README.md",
-      path: "README.md",
-      content: Buffer.from(
-        `# ${repo}
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("README not found");
+        }
+        throw new Error(`Failed to fetch README: ${response.statusText}`);
+      }
 
-<div class="repo-stats">
-  <span class="repo-stat">⭐ Stars: ${
-    repo === "mcp-server" ? "1800" : "1200"
-  }</span>
-  <span class="repo-stat">🍴 Forks: ${
-    repo === "mcp-server" ? "450" : "350"
-  }</span>
-  <span class="repo-stat">🐛 Issues: ${
-    repo === "mcp-server" ? "24" : "18"
-  }</span>
-</div>
-
-## Introduction
-This project is an implementation of the MCP(Model Context Protocol) ${
-          repo === "mcp-server" ? "server" : "client"
-        } called ${repo}.
-
-## Installation
-\`\`\`bash
-npm install ${repo}
-\`\`\`
-
-## Usage
-\`\`\`typescript
-import { MCP } from '${repo}';
-
-// Initialize
-const mcp = new MCP({
-  // Configuration
-});
-
-// Connect
-await mcp.connect();
-\`\`\`
-
-## Features
-- Fast performance
-- Reliable connection
-- Multi-platform support
-- Extensible architecture
-
-## License
-MIT License
-`
-      ).toString("base64")
-    };
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching GitHub README:", error);
+      throw error;
+    }
   }
 
   /**
@@ -96,46 +85,76 @@ MIT License
     repo: string,
     path: string = ""
   ): Promise<GithubContentItem[]> {
-    // 실제 API 연동 시 아래 주석 해제
-    // const url = `${config.github.apiUrl}/repos/${owner}/${repo}/contents/${path}`;
-    // const options = config.github.token
-    //   ? { headers: { 'Authorization': `token ${config.github.token}` } }
-    //   : {};
-    // return await this.get<GithubContentItem[]>(`${owner}/${repo}/contents/${path}`, options);
+    try {
+      const response = await fetch(
+        `${config.github.apiUrl}/repos/${owner}/${repo}/contents/${path}`,
+        { headers: this.headers }
+      );
 
-    // 현재는 목업 데이터 반환
-    return [
-      {
-        name: "src",
-        path: "src",
-        type: "dir"
-      },
-      {
-        name: "package.json",
-        path: "package.json",
-        type: "file"
-      },
-      {
-        name: "README.md",
-        path: "README.md",
-        type: "file"
-      },
-      {
-        name: "LICENSE",
-        path: "LICENSE",
-        type: "file"
-      },
-      {
-        name: "tsconfig.json",
-        path: "tsconfig.json",
-        type: "file"
-      },
-      {
-        name: ".gitignore",
-        path: ".gitignore",
-        type: "file"
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("Repository contents not found");
+        }
+        throw new Error(`Failed to fetch contents: ${response.statusText}`);
       }
-    ];
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching GitHub contents:", error);
+      throw error;
+    }
+  }
+
+  async getFileContent(
+    owner: string,
+    repo: string,
+    path: string
+  ): Promise<GithubFileContent> {
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+        { headers: this.headers }
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("파일을 찾을 수 없습니다.");
+        }
+        throw new Error("파일 내용을 가져오는데 실패했습니다.");
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("GitHub API 파일 내용 조회 실패:", error);
+      throw error;
+    }
+  }
+
+  async getDirectoryContents(
+    owner: string,
+    repo: string,
+    path: string = ""
+  ): Promise<GithubFileContent[]> {
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+        { headers: this.headers }
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("디렉토리를 찾을 수 없습니다.");
+        }
+        throw new Error("디렉토리 내용을 가져오는데 실패했습니다.");
+      }
+
+      const data = await response.json();
+      return Array.isArray(data) ? data : [data];
+    } catch (error) {
+      console.error("GitHub API 디렉토리 내용 조회 실패:", error);
+      throw error;
+    }
   }
 }
 
@@ -148,3 +167,12 @@ export const getGithubReadme = (owner: string, repo: string) =>
 
 export const getGithubContents = (owner: string, repo: string, path?: string) =>
   githubService.getGithubContents(owner, repo, path);
+
+export const getFileContent = (owner: string, repo: string, path: string) =>
+  githubService.getFileContent(owner, repo, path);
+
+export const getDirectoryContents = (
+  owner: string,
+  repo: string,
+  path?: string
+) => githubService.getDirectoryContents(owner, repo, path);

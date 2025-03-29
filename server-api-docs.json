@@ -1,0 +1,1477 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "MCP Repository Server API",
+        "description": "MCP Repository Server API 문서",
+        "version": "v1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8082/api/v1",
+            "description": "Generated server url"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ],
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "인증 관련 API"
+        },
+        {
+            "name": "User",
+            "description": "사용자 관련 API"
+        },
+        {
+            "name": "Repository Submission",
+            "description": "레포지토리 제출 관련 API"
+        },
+        {
+            "name": "Repository API",
+            "description": "MCP Repository 조회 관련 API"
+        }
+    ],
+    "paths": {
+        "/submissions": {
+            "get": {
+                "tags": [
+                    "Repository Submission"
+                ],
+                "summary": "회원의 모든 제출 목록 조회",
+                "description": "회원의 모든 제출 목록을 페이징 처리하여 조회합니다.",
+                "operationId": "getAllSubmissions",
+                "parameters": [
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "인증 실패",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseListSubmissionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseListSubmissionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "조회 성공",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseListSubmissionResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Repository Submission"
+                ],
+                "summary": "프로젝트 제출",
+                "description": "새로운 MCP 서버 또는 클라이언트 프로젝트를 제출합니다.",
+                "operationId": "submitRepository",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SubmissionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "401": {
+                        "description": "인증 실패",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSubmissionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "잘못된 요청",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSubmissionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "서버 오류",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSubmissionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "제출 성공",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSubmissionResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/submissions/{id}/status": {
+            "patch": {
+                "tags": [
+                    "Repository Submission"
+                ],
+                "summary": "제출 상태 업데이트",
+                "description": "관리자가 제출된 프로젝트의 상태를 수동으로 업데이트합니다.",
+                "operationId": "updateSubmissionStatus",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "제출 ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SubmissionStatusUpdateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "403": {
+                        "description": "권한 없음",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSubmissionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "제출 정보 없음",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSubmissionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "업데이트 성공",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSubmissionResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "현재 사용자 정보 조회",
+                "description": "로그인한 사용자의 정보를 반환합니다.",
+                "operationId": "getCurrentUser",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseUserResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/submissions/{id}": {
+            "get": {
+                "tags": [
+                    "Repository Submission"
+                ],
+                "summary": "제출 상태 조회",
+                "description": "제출한 프로젝트의 검토 상태를 확인합니다.",
+                "operationId": "getSubmissionStatus",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "제출 ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "제출 정보 없음",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSubmissionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "조회 성공",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSubmissionResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/open/repository/servers": {
+            "get": {
+                "tags": [
+                    "Repository API"
+                ],
+                "summary": "ServerRepository 목록 조회",
+                "description": "MCP 서버 레포지토리 목록을 페이징 처리하여 조회합니다.",
+                "operationId": "getServers",
+                "parameters": [
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "잘못된 요청",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponsePageServerRepositorySimpleResponseDto"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "서버 오류",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponsePageServerRepositorySimpleResponseDto"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "조회 성공",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponsePageServerRepositorySimpleResponseDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/open/repository/servers/{id}": {
+            "get": {
+                "tags": [
+                    "Repository API"
+                ],
+                "summary": "ServerRepository 상세 조회",
+                "description": "특정 MCP 서버 레포지토리의 상세 정보를 조회합니다.",
+                "operationId": "getServer",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "서버 레포지토리 ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "레포지토리 없음",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseServerRepositoryResponseDto"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "서버 오류",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseServerRepositoryResponseDto"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "조회 성공",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseServerRepositoryResponseDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/open/repository/clients": {
+            "get": {
+                "tags": [
+                    "Repository API"
+                ],
+                "summary": "ClientRepository 목록 조회",
+                "description": "MCP 클라이언트 레포지토리 목록을 페이징 처리하여 조회합니다.",
+                "operationId": "getClients",
+                "parameters": [
+                    {
+                        "name": "keyword",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "pageable",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/Pageable"
+                        }
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "잘못된 요청",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseListClientRepositorySimpleResponseDto"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "서버 오류",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseListClientRepositorySimpleResponseDto"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "조회 성공",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseListClientRepositorySimpleResponseDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/open/repository/clients/{id}": {
+            "get": {
+                "tags": [
+                    "Repository API"
+                ],
+                "summary": "ClientRepository 상세 조회",
+                "description": "특정 MCP 클라이언트 레포지토리의 상세 정보를 조회합니다.",
+                "operationId": "getClient",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "클라이언트 레포지토리 ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "레포지토리 없음",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseClientRepositoryResponseDto"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "서버 오류",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseClientRepositoryResponseDto"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "조회 성공",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseClientRepositoryResponseDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/google/url": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Google 로그인 URL 조회",
+                "description": "Google OAuth2 로그인을 위한 URL을 반환합니다.",
+                "operationId": "getGoogleLoginUrl",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseString"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/github/url": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "GitHub 로그인 URL 조회",
+                "description": "GitHub OAuth2 로그인을 위한 URL을 반환합니다.",
+                "operationId": "getGithubLoginUrl",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseString"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "SubmissionRequest": {
+                "required": [
+                    "author",
+                    "description",
+                    "name",
+                    "repoUrl",
+                    "type"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "프로젝트 이름",
+                        "example": "My MCP Client"
+                    },
+                    "author": {
+                        "type": "string",
+                        "description": "작성자",
+                        "example": "홍길동"
+                    },
+                    "type": {
+                        "pattern": "^(server|client)$",
+                        "type": "string",
+                        "description": "레포지토리 타입 (server/client)",
+                        "example": "client"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "프로젝트 설명",
+                        "example": "A lightweight MCP client written in TypeScript"
+                    },
+                    "repoUrl": {
+                        "type": "string",
+                        "description": "GitHub 레포지토리 URL",
+                        "example": "https://github.com/hongildong/my-mcp-client"
+                    },
+                    "websiteUrl": {
+                        "type": "string",
+                        "description": "웹사이트 URL (선택사항)",
+                        "example": "https://my-mcp-client.example.com"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "description": "태그 목록",
+                        "example": [
+                            "mcp",
+                            "client",
+                            "typescript"
+                        ],
+                        "items": {
+                            "type": "string",
+                            "description": "태그 목록",
+                            "example": "[\"mcp\",\"client\",\"typescript\"]"
+                        }
+                    },
+                    "email": {
+                        "type": "string",
+                        "description": "이메일",
+                        "example": "gildong@example.com"
+                    }
+                },
+                "description": "프로젝트 제출 요청"
+            },
+            "ApiResponseSubmissionResponse": {
+                "type": "object",
+                "properties": {
+                    "statusCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/SubmissionResponse"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "errorCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageInfo": {
+                        "$ref": "#/components/schemas/PageInfo"
+                    }
+                }
+            },
+            "PageInfo": {
+                "type": "object",
+                "properties": {
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "SubmissionResponse": {
+                "type": "object",
+                "properties": {
+                    "submissionId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "author": {
+                        "type": "string"
+                    },
+                    "repositoryId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "repoUrl": {
+                        "type": "string"
+                    },
+                    "websiteUrl": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "SubmissionStatusUpdateRequest": {
+                "required": [
+                    "message",
+                    "status"
+                ],
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "pattern": "^(APPROVED|REJECTED)$",
+                        "type": "string",
+                        "description": "새로운 상태 (APPROVED/REJECTED)",
+                        "example": "APPROVED"
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "상태 변경 메시지",
+                        "example": "프로젝트가 승인되었습니다."
+                    }
+                },
+                "description": "제출 상태 업데이트 요청"
+            },
+            "ApiResponseUserResponse": {
+                "type": "object",
+                "properties": {
+                    "statusCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/UserResponse"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "errorCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageInfo": {
+                        "$ref": "#/components/schemas/PageInfo"
+                    }
+                }
+            },
+            "UserResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "imageUrl": {
+                        "type": "string"
+                    },
+                    "socialType": {
+                        "type": "string",
+                        "enum": [
+                            "GITHUB",
+                            "GOOGLE"
+                        ]
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "USER",
+                            "ADMIN"
+                        ]
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "Pageable": {
+                "type": "object",
+                "properties": {
+                    "page": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "size": {
+                        "minimum": 1,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "ApiResponseListSubmissionResponse": {
+                "type": "object",
+                "properties": {
+                    "statusCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SubmissionResponse"
+                        }
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "errorCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageInfo": {
+                        "$ref": "#/components/schemas/PageInfo"
+                    }
+                }
+            },
+            "ApiResponsePageServerRepositorySimpleResponseDto": {
+                "type": "object",
+                "properties": {
+                    "statusCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/PageServerRepositorySimpleResponseDto"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "errorCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageInfo": {
+                        "$ref": "#/components/schemas/PageInfo"
+                    }
+                }
+            },
+            "PageServerRepositorySimpleResponseDto": {
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ServerRepositorySimpleResponseDto"
+                        }
+                    },
+                    "number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "pageable": {
+                        "$ref": "#/components/schemas/PageableObject"
+                    },
+                    "numberOfElements": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PageableObject": {
+                "type": "object",
+                "properties": {
+                    "offset": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/SortObject"
+                    },
+                    "paged": {
+                        "type": "boolean"
+                    },
+                    "unpaged": {
+                        "type": "boolean"
+                    },
+                    "pageNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                }
+            },
+            "ServerRepositorySimpleResponseDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "owner": {
+                        "type": "string"
+                    },
+                    "repo": {
+                        "type": "string"
+                    },
+                    "githubUrl": {
+                        "type": "string"
+                    },
+                    "demoUrl": {
+                        "type": "string"
+                    },
+                    "isOfficial": {
+                        "type": "boolean"
+                    },
+                    "language": {
+                        "type": "string"
+                    },
+                    "stars": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "forks": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "license": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "SortObject": {
+                "type": "object",
+                "properties": {
+                    "empty": {
+                        "type": "boolean"
+                    },
+                    "unsorted": {
+                        "type": "boolean"
+                    },
+                    "sorted": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "ApiResponseServerRepositoryResponseDto": {
+                "type": "object",
+                "properties": {
+                    "statusCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/ServerRepositoryResponseDto"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "errorCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageInfo": {
+                        "$ref": "#/components/schemas/PageInfo"
+                    }
+                }
+            },
+            "CommandDto": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "command": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "platform": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ContributorDto": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "githubUrl": {
+                        "type": "string"
+                    },
+                    "avatarUrl": {
+                        "type": "string"
+                    }
+                }
+            },
+            "DatabaseDto": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "descriptionSchema": {
+                        "type": "string"
+                    }
+                }
+            },
+            "DeploymentOptionDto": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                }
+            },
+            "EnvironmentVariableDto": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "required": {
+                        "type": "boolean"
+                    },
+                    "defaultValue": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                }
+            },
+            "McpToolDto": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    },
+                    "usageInfo": {
+                        "type": "string"
+                    },
+                    "documentation": {
+                        "type": "string"
+                    },
+                    "isRequired": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "ServerRepositoryResponseDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "owner": {
+                        "type": "string"
+                    },
+                    "repo": {
+                        "type": "string"
+                    },
+                    "githubUrl": {
+                        "type": "string"
+                    },
+                    "demoUrl": {
+                        "type": "string"
+                    },
+                    "isOfficial": {
+                        "type": "boolean"
+                    },
+                    "language": {
+                        "type": "string"
+                    },
+                    "stars": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "forks": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "license": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "database": {
+                        "$ref": "#/components/schemas/DatabaseDto"
+                    },
+                    "systemRequirements": {
+                        "$ref": "#/components/schemas/SystemRequirementsDto"
+                    },
+                    "mcpTools": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/McpToolDto"
+                        }
+                    },
+                    "environmentVariables": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/EnvironmentVariableDto"
+                        }
+                    },
+                    "commands": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CommandDto"
+                        }
+                    },
+                    "deploymentOptions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DeploymentOptionDto"
+                        }
+                    },
+                    "contributors": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ContributorDto"
+                        }
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "SystemRequirementsDto": {
+                "type": "object",
+                "properties": {
+                    "hardware": {
+                        "type": "string"
+                    },
+                    "software": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ApiResponseListClientRepositorySimpleResponseDto": {
+                "type": "object",
+                "properties": {
+                    "statusCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ClientRepositorySimpleResponseDto"
+                        }
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "errorCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageInfo": {
+                        "$ref": "#/components/schemas/PageInfo"
+                    }
+                }
+            },
+            "ClientRepositorySimpleResponseDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "owner": {
+                        "type": "string"
+                    },
+                    "repo": {
+                        "type": "string"
+                    },
+                    "githubUrl": {
+                        "type": "string"
+                    },
+                    "isOfficial": {
+                        "type": "boolean"
+                    },
+                    "language": {
+                        "type": "string"
+                    },
+                    "stars": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "forks": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "license": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "ApiResponseClientRepositoryResponseDto": {
+                "type": "object",
+                "properties": {
+                    "statusCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/ClientRepositoryResponseDto"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "errorCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageInfo": {
+                        "$ref": "#/components/schemas/PageInfo"
+                    }
+                }
+            },
+            "ClientRepositoryResponseDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "owner": {
+                        "type": "string"
+                    },
+                    "repo": {
+                        "type": "string"
+                    },
+                    "githubUrl": {
+                        "type": "string"
+                    },
+                    "isOfficial": {
+                        "type": "boolean"
+                    },
+                    "language": {
+                        "type": "string"
+                    },
+                    "stars": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "forks": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "license": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "installInstructions": {
+                        "type": "string"
+                    },
+                    "usageExamples": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "supportedLanguages": {
+                        "uniqueItems": true,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "platforms": {
+                        "uniqueItems": true,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "contributors": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ContributorDto"
+                        }
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "ApiResponseString": {
+                "type": "object",
+                "properties": {
+                    "statusCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "errorCode": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageInfo": {
+                        "$ref": "#/components/schemas/PageInfo"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}
